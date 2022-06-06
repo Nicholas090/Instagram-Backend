@@ -8,13 +8,11 @@ import LoggerService from '../logger/logger.service';
 import ILogger from '../logger/logger.service.interface';
 
 class UserController implements IUserController {
-	logger: ILogger;
-	constructor() {
-		this.logger = new LoggerService();
-	}
+	// logger: ILogger;
+
 	async registration(req: Request, res: Response, next: NextFunction): Promise<object | void> {
 		try {
-			this.logger.log('Registartion');
+			// this.logger.log('Registartion');
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
 				return next(ApiError.BadRequest('Ошибка валидации', errors.array));
@@ -34,7 +32,7 @@ class UserController implements IUserController {
 
 	async login(req: Request, res: Response, next: NextFunction): Promise<any> {
 		try {
-			this.logger.log('login');
+			// this.logger.log('login');
 			const { email, password } = req.body;
 			const userData = await UserService.login(email, password);
 			res.cookie('refreshToken', userData.refreshToken, {
@@ -49,7 +47,7 @@ class UserController implements IUserController {
 
 	async logout(req: Request, res: Response, next: NextFunction): Promise<any> {
 		try {
-			this.logger.log('logout');
+			// this.logger.log('logout');
 			const { refreshToken } = req.cookies;
 			const token = await UserService.logout(refreshToken);
 			res.clearCookie('refreshToken');
@@ -60,7 +58,7 @@ class UserController implements IUserController {
 	}
 	async activate(req: Request, res: Response, next: NextFunction): Promise<void> {
 		try {
-			this.logger.log('Activate link');
+			// this.logger.log('Activate link');
 			const activateLink = req.params.link;
 			UserService.activate(activateLink);
 			return res.redirect(process.env.CLIENT_URL as string);
@@ -70,16 +68,21 @@ class UserController implements IUserController {
 	}
 	async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
 		try {
-			this.logger.log('Refresh Token');
-			const { refreshToken } = req.cookies();
+			// this.logger.log('Refresh Token');
+			const { refreshToken } = req.cookies;
 			const userData = await userService.refresh(refreshToken);
+			res.cookie('refreshToken', userData.refreshToken, {
+				maxAge: 30 * 24 * 68 * 68 * 1000,
+				httpOnly: true,
+			});
+			res.json(userData.refreshToken);
 		} catch (e) {
 			next(e);
 		}
 	}
 	async getUsers(req: Request, res: Response, next: NextFunction): Promise<any> {
 		try {
-			this.logger.log('Get users');
+			// this.logger.log('Get users');
 			const users = await UserService.getAllUsers();
 			return res.json(users);
 		} catch (e) {

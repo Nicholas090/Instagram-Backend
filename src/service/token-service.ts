@@ -27,7 +27,7 @@ class TokenService implements ITokenService {
 
 	validateAccessToken(token: string): string | JwtPayload | null {
 		try {
-			const userData = verify(token, process.env.JST_ACCESS_TOKEN as string);
+			const userData = verify(token, process.env.JWT_ACCESS_SECRET as string);
 			return userData;
 		} catch (e) {
 			return null;
@@ -36,9 +36,10 @@ class TokenService implements ITokenService {
 
 	validateRefreshToken(token: string): string | JwtPayload | null {
 		try {
-			const userData = verify(token, process.env.JST_REFRESH_TOKEN as string);
+			const userData = verify(token, process.env.JWT_REFRESH_SECRET as string);
 			return userData;
 		} catch (e) {
+			console.log(e);
 			return null;
 		}
 	}

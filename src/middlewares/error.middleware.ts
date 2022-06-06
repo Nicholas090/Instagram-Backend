@@ -6,7 +6,7 @@ import ILogger from '../logger/logger.service.interface';
 export default function (err: any, req: Request, res: Response, next: NextFunction): any {
 	const logger: ILogger = new LoggerService();
 
-	// console.log(err);
+	console.log(err);
 	if (err instanceof ApiError) {
 		logger.warn();
 		return res.status(err.status).json({ message: err.message, errors: err.err });

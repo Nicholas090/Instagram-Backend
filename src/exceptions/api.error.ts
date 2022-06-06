@@ -1,7 +1,3 @@
-import { inject, injectable } from 'inversify';
-import 'reflect-metadata';
-
-@injectable()
 export default class ApiError extends Error {
 	status: number;
 	err: any;

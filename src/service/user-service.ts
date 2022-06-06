@@ -83,10 +83,10 @@ class UserService implements IUserService {
 			throw ApiError.UnauthorizedError();
 		}
 		const userData = TokenService.validateRefreshToken(refreshToken);
-		const user = await UserModel.findById((userData as JwtPayload).id);
+		const user = await UserModel.findById((userData as any).id);
 
 		const tokenFromDb = await TokenService.findToken(refreshToken);
-		if (!userData || !tokenFromDb) {
+		if (!userData || !tokenFromDb || !user) {
 			throw ApiError.UnauthorizedError();
 		}
 

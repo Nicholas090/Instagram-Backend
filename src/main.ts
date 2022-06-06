@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 require('dotenv').config();
 import cors from 'cors';
 const cookieParser = require('cookie-parser');
