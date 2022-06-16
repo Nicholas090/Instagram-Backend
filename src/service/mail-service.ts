@@ -1,10 +1,14 @@
 import IMailService from './interfaces/mail.service.interface';
 import nodemailer, { Transporter } from 'nodemailer';
+import { injectable } from 'inversify';
+import 'reflect-metadata';
 
+@injectable()
 class MailService implements IMailService {
 	transporter: Transporter;
 	constructor() {
 		this.transporter = nodemailer.createTransport({
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			//@ts-ignore
 			host: process.env.SMTP_HOST,
 			port: process.env.SMTP_PORT,
@@ -30,4 +34,4 @@ class MailService implements IMailService {
 	}
 }
 
-export default new MailService();
+export default MailService;

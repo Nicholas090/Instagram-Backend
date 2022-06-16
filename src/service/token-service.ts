@@ -1,7 +1,10 @@
 import { JwtPayload, Secret, sign, verify } from 'jsonwebtoken';
 import TokenModel from '../models/token.model';
 import ITokenService from './interfaces/token.service.interface';
+import { injectable } from 'inversify';
+import 'reflect-metadata';
 
+@injectable()
 class TokenService implements ITokenService {
 	generateToken(payload: any): { accessToken: string; refreshToken: string } {
 		const accessToken = sign(payload, process.env.JWT_ACCESS_SECRET as Secret, {
@@ -55,4 +58,4 @@ class TokenService implements ITokenService {
 	}
 }
 
-export default new TokenService();
+export default TokenService;

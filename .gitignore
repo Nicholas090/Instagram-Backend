@@ -83,7 +83,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-.\.env
 
 
 #---------------------------------------#
@@ -99,4 +98,6 @@ Desktop.ini
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/!/.env
+!/.env
+!/.env
 !/.env
