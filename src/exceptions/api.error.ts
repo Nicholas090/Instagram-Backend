@@ -1,7 +1,3 @@
-import { inject, injectable } from 'inversify';
-import 'reflect-metadata';
-
-@injectable()
 export default class ApiError extends Error {
 	status: number;
 	err: any;
@@ -12,10 +8,14 @@ export default class ApiError extends Error {
 	}
 
 	static UnauthorizedError(): ApiError {
-		return new ApiError(402, 'Пользователь не авторизован', []);
+		throw new ApiError(404, 'Пользователь не авторизован', []);
 	}
 
 	static BadRequest(message: any, err?: any): ApiError {
-		return new ApiError(401, message, err);
+		throw new ApiError(401, message, err);
+	}
+
+	static validationUserError(message: string, err?: any): ApiError {
+		throw new ApiError(401, message, err);
 	}
 }

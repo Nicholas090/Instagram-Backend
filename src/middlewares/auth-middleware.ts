@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
 import ApiError from '../exceptions/api.error';
-import TokenService from '../service/token-service';
+import { appContainer } from '../main';
+import { TYPES } from '../Types';
+import ITokenService from '../service/interfaces/token.service.interface';
+
 export default function (req: Request, res: Response, next: NextFunction): void {
+	const TokenService = appContainer.get<ITokenService>(TYPES.TokenService);
 	try {
 		const authorizationHeader = req.headers.authorization;
 		if (!authorizationHeader) {

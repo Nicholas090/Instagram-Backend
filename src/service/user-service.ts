@@ -1,24 +1,31 @@
 import UserModel from '../models/user.model';
 import bcrypt from 'bcrypt';
 import { v4 } from 'uuid';
-import MailService from './mail-service';
 import UserDto from '../dto/user.dto';
 import IUserService, { IUserServiceReturn } from './interfaces/user.service.interface';
 import ApiError from '../exceptions/api.error';
-import TokenService from './token-service';
-import { JwtPayload } from 'jsonwebtoken';
-class UserService implements IUserService {
+import { inject, injectable } from 'inversify';
+import { TYPES } from '../Types';
+import ITokenService from './interfaces/token.service.interface';
+import IMailService from './interfaces/mail.service.interface';
+import 'reflect-metadata';
+
+@injectable()
+export class UserService implements IUserService {
+	constructor(
+		@inject(TYPES.TokenService) private TokenService: ITokenService,
+		@inject(TYPES.MailService) private MailService: IMailService,
+	) {}
 	async registration(
 		email: string,
 		password: string,
 		userNickName: string,
 		userName: string,
-	): Promise<IUserServiceReturn> {
+	): Promise<IUserServiceReturn | any> {
 		const candidate = await UserModel.findOne({ email });
 		if (candidate) {
 			ApiError.BadRequest(`Пользователь с таким Email ${email} уже существует`);
 		}
-
 		const hashPassword = await bcrypt.hash(password, 3);
 		const activationLink = await v4();
 		const user = await UserModel.create({
@@ -28,13 +35,13 @@ class UserService implements IUserService {
 			userName,
 			activationLink,
 		});
-		await MailService.sendActivationMail(
+		await this.MailService.sendActivationMail(
 			email,
 			`${process.env.API_URL}/api/activate/${activationLink}`,
 		);
 		const userDto = new UserDto(user);
-		const tokens = TokenService.generateToken({ ...userDto });
-		await TokenService.saveToken(userDto.id, tokens.refreshToken);
+		const tokens = this.TokenService.generateToken({ ...userDto });
+		await this.TokenService.saveToken(userDto.id, tokens.refreshToken);
 
 		return {
 			...tokens,
@@ -59,14 +66,16 @@ class UserService implements IUserService {
 		}
 		const isPassEqual = await bcrypt.compare(password, user.password);
 		if (!isPassEqual) {
-			ApiError.BadRequest('Пароль неверный');
+			ApiError.BadRequest(
+				'К сожалению, вы ввели неправильный пароль. Проверьте свой пароль еще раз.',
+			);
 		}
 
 		const userDto = new UserDto(user);
 
-		const tokens = TokenService.generateToken({ ...userDto });
+		const tokens = this.TokenService.generateToken({ ...userDto });
 
-		await TokenService.saveToken(userDto.id, tokens.refreshToken);
+		await this.TokenService.saveToken(userDto.id, tokens.refreshToken);
 		return {
 			...tokens,
 			user: userDto,
@@ -74,27 +83,27 @@ class UserService implements IUserService {
 	}
 
 	async logout(refreshToken: string): Promise<object> {
-		const token = await TokenService.removeToken(refreshToken);
+		const token = await this.TokenService.removeToken(refreshToken);
 		return token;
 	}
 
 	async refresh(refreshToken: string): Promise<IUserServiceReturn> {
 		if (!refreshToken) {
-			throw ApiError.UnauthorizedError();
+			ApiError.UnauthorizedError();
 		}
-		const userData = TokenService.validateRefreshToken(refreshToken);
-		const user = await UserModel.findById((userData as JwtPayload).id);
+		const userData = this.TokenService.validateRefreshToken(refreshToken);
+		const user = await UserModel.findById((userData as any).id);
 
-		const tokenFromDb = await TokenService.findToken(refreshToken);
-		if (!userData || !tokenFromDb) {
-			throw ApiError.UnauthorizedError();
+		const tokenFromDb = await this.TokenService.findToken(refreshToken);
+		if (!userData || !tokenFromDb || !user) {
+			ApiError.UnauthorizedError();
 		}
 
 		const userDto = new UserDto(user);
 
-		const tokens = TokenService.generateToken({ ...userDto });
+		const tokens = this.TokenService.generateToken({ ...userDto });
 
-		await TokenService.saveToken(userDto.id, tokens.refreshToken);
+		await this.TokenService.saveToken(userDto.id, tokens.refreshToken);
 		return {
 			...tokens,
 			user: userDto,
@@ -106,4 +115,4 @@ class UserService implements IUserService {
 		return users;
 	}
 }
-export default new UserService();
+// export  UserService;
