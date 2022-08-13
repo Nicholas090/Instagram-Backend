@@ -9,6 +9,7 @@ import { TYPES } from '../Types';
 import ITokenService from './interfaces/token.service.interface';
 import IMailService from './interfaces/mail.service.interface';
 import 'reflect-metadata';
+import {getUsersDto} from "../dto/getUsersDto";
 
 @injectable()
 export class UserService implements IUserService {
@@ -51,12 +52,14 @@ export class UserService implements IUserService {
 
 	async activate(activationLink: string): Promise<void> {
 		const user = await UserModel.findOne({ activationLink });
-		if (!user) {
+		if (user) {
+			user.isActivated = true;
+			await user.save();
+		}else {
 			ApiError.BadRequest('Некоректная ссылка активации');
 		}
 
-		user.isActivated = true;
-		await user.save();
+
 	}
 
 	async login(email: string, password: string): Promise<IUserServiceReturn> {
@@ -64,7 +67,7 @@ export class UserService implements IUserService {
 		if (!user) {
 			ApiError.BadRequest('Пользователя с таким email нет');
 		}
-		const isPassEqual = await bcrypt.compare(password, user.password);
+		const isPassEqual = await bcrypt.compare(password, user!.password);
 		if (!isPassEqual) {
 			ApiError.BadRequest(
 				'К сожалению, вы ввели неправильный пароль. Проверьте свой пароль еще раз.',
@@ -112,7 +115,7 @@ export class UserService implements IUserService {
 
 	async getAllUsers(): Promise<any> {
 		const users = await UserModel.find();
-		return users;
+		return getUsersDto(users);
 	}
 }
 // export  UserService;
